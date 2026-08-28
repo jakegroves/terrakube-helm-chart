@@ -1,0 +1,30 @@
+api:
+  otel:
+    enabled: true
+    otlp:
+      endpoint: http://otel-collector.observability:4318
+  metrics:
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack
+executor:
+  otel:
+    enabled: true
+    otlp:
+      endpoint: http://otel-collector.observability:4318
+  metrics:
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack
+registry:
+  otel:
+    enabled: true
+    otlp:
+      endpoint: http://otel-collector.observability:4318
+  metrics:
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack

@@ -1,0 +1,6 @@
+api:
+  otel:
+    enabled: true
+    protocol: jaeger
+    traces:
+      endpoint: http://jaeger-collector.observability:14268/api/traces
