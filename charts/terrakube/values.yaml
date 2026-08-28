@@ -3,6 +3,8 @@ name: "terrakube"
 
 global:
   imagePullSecrets: []
+  observability:
+    environment: ""                 # dev | staging | prod -> OTEL deployment.environment
 
 enableIPv6: true
 
@@ -212,13 +214,33 @@ api:
     privateKeyPath: "/etc/terrakube/credentials/private-key.pem"
   otel:
     enabled: false
-    metrics:
-      port: "9464"
-      host: "0.0.0.0"
+    serviceName: ""                 # defaults to terrakube-api
+    protocol: otlp                   # otlp | jaeger | zipkin  (jaeger/zipkin are deprecated)
+    otlp:
+      endpoint: ""                   # REQUIRED when protocol=otlp and otel.enabled=true
+      protocol: http/protobuf        # http/protobuf | grpc
     traces:
-      type: ""
-      # endpoint its just example, change it to your jaeger endpoint
-      endpoint: "http://terrakube-api.minikube.net:9411/api/v2/spans" 
+      samplerArg: "0.1"
+      endpoint: ""                   # only used when protocol is jaeger or zipkin
+    logs:
+      enabled: true                  # ship logs via the agent's OTLP log appender
+  metrics:
+    enabled: true
+    path: /actuator/prometheus
+    port: http
+    interval: 30s
+    serviceMonitor:                  # Prometheus Operator / kube-prometheus-stack
+      enabled: false
+      additionalLabels: {}
+      relabelings: []
+    podMonitor:                      # Prometheus Operator
+      enabled: false
+      additionalLabels: {}
+    vmPodScrape:                     # VictoriaMetrics Operator
+      enabled: false
+      additionalLabels: {}
+    annotations:                     # plain prometheus.io/scrape pod annotations
+      enabled: false
   rbac:
     create: false
     roleName: "terrakube-api-role"
@@ -299,13 +321,33 @@ executor:
    - terrakube-executor-config
   otel:
     enabled: false
-    metrics:
-      port: "9464"
-      host: "0.0.0.0"
+    serviceName: ""                 # defaults to terrakube-executor
+    protocol: otlp                   # otlp | jaeger | zipkin  (jaeger/zipkin are deprecated)
+    otlp:
+      endpoint: ""                   # REQUIRED when protocol=otlp and otel.enabled=true
+      protocol: http/protobuf        # http/protobuf | grpc
     traces:
-      type: jaeger
-      # endpoint its just example, change it to your jaeger endpoint
-      endpoint: "http://terrakube-api.minikube.net:9411/api/v2/spans" 
+      samplerArg: "0.1"
+      endpoint: ""                   # only used when protocol is jaeger or zipkin
+    logs:
+      enabled: true
+  metrics:
+    enabled: true
+    path: /actuator/prometheus
+    port: http
+    interval: 30s
+    serviceMonitor:
+      enabled: false
+      additionalLabels: {}
+      relabelings: []
+    podMonitor:
+      enabled: false
+      additionalLabels: {}
+    vmPodScrape:
+      enabled: false
+      additionalLabels: {}
+    annotations:
+      enabled: false
   resources: {}
   podLabels: {}
   podAnnotations: {}
@@ -348,13 +390,33 @@ registry:
    - terrakube-registry-config
   otel:
     enabled: false
-    metrics:
-      port: "9464"
-      host: "0.0.0.0"
+    serviceName: ""                 # defaults to terrakube-registry
+    protocol: otlp                   # otlp | jaeger | zipkin  (jaeger/zipkin are deprecated)
+    otlp:
+      endpoint: ""                   # REQUIRED when protocol=otlp and otel.enabled=true
+      protocol: http/protobuf        # http/protobuf | grpc
     traces:
-      type: jaeger
-      # endpoint its just example, change it to your jaeger endpoint
-      endpoint: "http://terrakube-api.minikube.net:9411/api/v2/spans" 
+      samplerArg: "0.1"
+      endpoint: ""                   # only used when protocol is jaeger or zipkin
+    logs:
+      enabled: true
+  metrics:
+    enabled: true
+    path: /actuator/prometheus
+    port: http
+    interval: 30s
+    serviceMonitor:
+      enabled: false
+      additionalLabels: {}
+      relabelings: []
+    podMonitor:
+      enabled: false
+      additionalLabels: {}
+    vmPodScrape:
+      enabled: false
+      additionalLabels: {}
+    annotations:
+      enabled: false
   resources: {}
   podAnnotations: {}
   podLabels: {}

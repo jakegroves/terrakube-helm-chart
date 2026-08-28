@@ -115,25 +115,51 @@
                         "enabled": {
                             "type": "boolean"
                         },
-                        "metrics": {
+                        "serviceName": {
+                            "type": "string"
+                        },
+                        "protocol": {
+                            "type": "string",
+                            "enum": [
+                                "otlp",
+                                "jaeger",
+                                "zipkin"
+                            ]
+                        },
+                        "otlp": {
                             "type": "object",
                             "properties": {
-                                "host": {
+                                "endpoint": {
                                     "type": "string"
                                 },
-                                "port": {
-                                    "type": "string"
+                                "protocol": {
+                                    "type": "string",
+                                    "enum": [
+                                        "http/protobuf",
+                                        "grpc"
+                                    ]
                                 }
                             }
                         },
                         "traces": {
                             "type": "object",
                             "properties": {
+                                "samplerArg": {
+                                    "type": "string"
+                                },
                                 "endpoint": {
                                     "type": "string"
                                 },
                                 "type": {
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "logs": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
                                 }
                             }
                         }
@@ -268,6 +294,67 @@
                 },
                 "version": {
                     "type": "string"
+                },
+                "metrics": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "path": {
+                            "type": "string"
+                        },
+                        "port": {
+                            "type": "string"
+                        },
+                        "interval": {
+                            "type": "string"
+                        },
+                        "serviceMonitor": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "additionalLabels": {
+                                    "type": "object"
+                                },
+                                "relabelings": {
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "podMonitor": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "additionalLabels": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "vmPodScrape": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "additionalLabels": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "annotations": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -537,25 +624,51 @@
                         "enabled": {
                             "type": "boolean"
                         },
-                        "metrics": {
+                        "serviceName": {
+                            "type": "string"
+                        },
+                        "protocol": {
+                            "type": "string",
+                            "enum": [
+                                "otlp",
+                                "jaeger",
+                                "zipkin"
+                            ]
+                        },
+                        "otlp": {
                             "type": "object",
                             "properties": {
-                                "host": {
+                                "endpoint": {
                                     "type": "string"
                                 },
-                                "port": {
-                                    "type": "string"
+                                "protocol": {
+                                    "type": "string",
+                                    "enum": [
+                                        "http/protobuf",
+                                        "grpc"
+                                    ]
                                 }
                             }
                         },
                         "traces": {
                             "type": "object",
                             "properties": {
+                                "samplerArg": {
+                                    "type": "string"
+                                },
                                 "endpoint": {
                                     "type": "string"
                                 },
                                 "type": {
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "logs": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
                                 }
                             }
                         }
@@ -634,6 +747,67 @@
                 },
                 "version": {
                     "type": "string"
+                },
+                "metrics": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "path": {
+                            "type": "string"
+                        },
+                        "port": {
+                            "type": "string"
+                        },
+                        "interval": {
+                            "type": "string"
+                        },
+                        "serviceMonitor": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "additionalLabels": {
+                                    "type": "object"
+                                },
+                                "relabelings": {
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "podMonitor": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "additionalLabels": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "vmPodScrape": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "additionalLabels": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "annotations": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -642,6 +816,14 @@
             "properties": {
                 "imagePullSecrets": {
                     "type": "array"
+                },
+                "observability": {
+                    "type": "object",
+                    "properties": {
+                        "environment": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         },
@@ -1176,25 +1358,51 @@
                         "enabled": {
                             "type": "boolean"
                         },
-                        "metrics": {
+                        "serviceName": {
+                            "type": "string"
+                        },
+                        "protocol": {
+                            "type": "string",
+                            "enum": [
+                                "otlp",
+                                "jaeger",
+                                "zipkin"
+                            ]
+                        },
+                        "otlp": {
                             "type": "object",
                             "properties": {
-                                "host": {
+                                "endpoint": {
                                     "type": "string"
                                 },
-                                "port": {
-                                    "type": "string"
+                                "protocol": {
+                                    "type": "string",
+                                    "enum": [
+                                        "http/protobuf",
+                                        "grpc"
+                                    ]
                                 }
                             }
                         },
                         "traces": {
                             "type": "object",
                             "properties": {
+                                "samplerArg": {
+                                    "type": "string"
+                                },
                                 "endpoint": {
                                     "type": "string"
                                 },
                                 "type": {
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "logs": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
                                 }
                             }
                         }
@@ -1265,6 +1473,67 @@
                 },
                 "version": {
                     "type": "string"
+                },
+                "metrics": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "path": {
+                            "type": "string"
+                        },
+                        "port": {
+                            "type": "string"
+                        },
+                        "interval": {
+                            "type": "string"
+                        },
+                        "serviceMonitor": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "additionalLabels": {
+                                    "type": "object"
+                                },
+                                "relabelings": {
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "podMonitor": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "additionalLabels": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "vmPodScrape": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "additionalLabels": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "annotations": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
