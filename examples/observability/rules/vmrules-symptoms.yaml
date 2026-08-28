@@ -1,0 +1,52 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: terrakube-symptoms
+  namespace: observability
+spec:
+  groups:
+    - name: terrakube.symptoms
+      rules:
+        - alert: TerrakubeApiDbPoolExhausted
+          expr: hikaricp_connections_pending{service="terrakube-api"} > 0
+          for: 5m
+          labels: { severity: critical }
+          annotations:
+            summary: "API JDBC pool has waiters for 5m"
+            description: "Threads are blocked waiting for a DB connection - the pool is saturated (see the log-viewing / large S3 read path)."
+
+        - alert: TerrakubeWebhookQueueStale
+          expr: webhook_delivery_queue_oldest_age_seconds > 900
+          for: 10m
+          labels: { severity: warning }
+          annotations:
+            summary: "Oldest pending webhook delivery is older than 15m"
+
+        - alert: TerrakubeExecutorOOMKilled
+          expr: increase(kube_pod_container_status_last_terminated_reason{reason="OOMKilled", pod=~"terrakube-executor.*"}[10m]) > 0
+          labels: { severity: critical }
+          annotations:
+            summary: "An executor pod was OOMKilled"
+
+        - alert: TerrakubeServiceDown
+          expr: up{job=~"terrakube-(api|executor|registry)"} == 0
+          for: 2m
+          labels: { severity: critical }
+          annotations:
+            summary: "{{ $labels.job }} has no healthy scrape target"
+
+        - alert: TerrakubeCollectorExportFailing
+          expr: |
+            sum(rate(otelcol_exporter_send_failed_spans_total[10m]))
+            + sum(rate(otelcol_exporter_send_failed_log_records_total[10m])) > 0
+          for: 10m
+          labels: { severity: warning }
+          annotations:
+            summary: "OTel collector is failing to export telemetry"
+
+        - alert: TerrakubeObservabilityPvcNearFull
+          expr: kubelet_volume_stats_used_bytes{namespace="observability"} / kubelet_volume_stats_capacity_bytes{namespace="observability"} > 0.85
+          for: 15m
+          labels: { severity: warning }
+          annotations:
+            summary: "{{ $labels.persistentvolumeclaim }} is over 85% full"

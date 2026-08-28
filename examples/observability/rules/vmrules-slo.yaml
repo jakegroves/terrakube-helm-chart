@@ -1,0 +1,63 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: terrakube-slo
+  namespace: observability
+spec:
+  groups:
+    # ---- recording rules: error ratios over multiple windows ----
+    - name: terrakube.slo.recording
+      interval: 30s
+      rules:
+        - record: terrakube:api_request_error_ratio_rate5m
+          expr: |
+            sum(rate(http_server_requests_seconds_count{service="terrakube-api", status=~"5.."}[5m]))
+            / clamp_min(sum(rate(http_server_requests_seconds_count{service="terrakube-api"}[5m])), 1)
+        - record: terrakube:api_request_error_ratio_rate1h
+          expr: |
+            sum(rate(http_server_requests_seconds_count{service="terrakube-api", status=~"5.."}[1h]))
+            / clamp_min(sum(rate(http_server_requests_seconds_count{service="terrakube-api"}[1h])), 1)
+        - record: terrakube:api_request_error_ratio_rate30m
+          expr: |
+            sum(rate(http_server_requests_seconds_count{service="terrakube-api", status=~"5.."}[30m]))
+            / clamp_min(sum(rate(http_server_requests_seconds_count{service="terrakube-api"}[30m])), 1)
+        - record: terrakube:api_request_error_ratio_rate6h
+          expr: |
+            sum(rate(http_server_requests_seconds_count{service="terrakube-api", status=~"5.."}[6h]))
+            / clamp_min(sum(rate(http_server_requests_seconds_count{service="terrakube-api"}[6h])), 1)
+        - record: terrakube:job_failure_ratio_rate1h
+          expr: |
+            sum(rate(terrakube_job_transitions_total{to="failed"}[1h]))
+            / clamp_min(sum(rate(terrakube_job_transitions_total{to=~"failed|completed|noChanges"}[1h])), 1)
+
+    # ---- SLO burn-rate alerts ----
+    # API availability SLO = 99.5% -> error budget 0.5%. Fast burn 14.4x, slow burn 6x.
+    - name: terrakube.slo.api-availability
+      rules:
+        - alert: TerrakubeApiAvailabilityFastBurn
+          expr: |
+            terrakube:api_request_error_ratio_rate5m > (14.4 * 0.005)
+            and terrakube:api_request_error_ratio_rate1h > (14.4 * 0.005)
+          for: 2m
+          labels: { severity: critical, slo: api-availability }
+          annotations:
+            summary: "API error budget burning fast (>14.4x)"
+            description: "At this rate the 30d 99.5% error budget is exhausted in ~2 days."
+        - alert: TerrakubeApiAvailabilitySlowBurn
+          expr: |
+            terrakube:api_request_error_ratio_rate30m > (6 * 0.005)
+            and terrakube:api_request_error_ratio_rate6h > (6 * 0.005)
+          for: 15m
+          labels: { severity: warning, slo: api-availability }
+          annotations:
+            summary: "API error budget burning (>6x)"
+
+    # Job success SLO = 99%.
+    - name: terrakube.slo.job-success
+      rules:
+        - alert: TerrakubeJobSuccessSlowBurn
+          expr: terrakube:job_failure_ratio_rate1h > (6 * 0.01)
+          for: 30m
+          labels: { severity: warning, slo: job-success }
+          annotations:
+            summary: "Job failure rate is eating the 99% success budget"

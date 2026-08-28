@@ -1,0 +1,36 @@
+# Provision the three datasources into an existing Grafana via its sidecar
+# (label grafana_datasource: "1"). If you enabled the bundled Grafana in
+# victoria-metrics-k8s-stack.values.yaml instead, it picks this up automatically.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: terrakube-observability-datasources
+  namespace: observability
+  labels:
+    grafana_datasource: "1"
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: VictoriaMetrics
+        uid: victoriametrics
+        type: prometheus
+        access: proxy
+        url: http://vmselect-vmcluster-victoria-metrics-k8s-stack.observability.svc:8481/select/0/prometheus
+        isDefault: true
+      - name: Tempo
+        uid: tempo
+        type: tempo
+        access: proxy
+        url: http://tempo-query-frontend.observability.svc:3200
+        jsonData:
+          tracesToLogsV2:
+            datasourceUid: victorialogs
+            filterByTraceID: true
+          serviceMap:
+            datasourceUid: victoriametrics
+      - name: VictoriaLogs
+        uid: victorialogs
+        type: victoriametrics-logs-datasource
+        access: proxy
+        url: http://victoria-logs-victoria-logs-single-server.observability.svc:9428
