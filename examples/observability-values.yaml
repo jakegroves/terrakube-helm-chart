@@ -1,0 +1,37 @@
+# Point the Terrakube chart at an in-cluster OpenTelemetry Collector + a metrics
+# scraper. The telemetry backend itself (collector, VictoriaMetrics, Tempo,
+# VictoriaLogs, Grafana) is installed separately - see examples/observability/.
+#
+# Swap `vmPodScrape` for `serviceMonitor` / `podMonitor` / `annotations` to match
+# whatever your cluster already runs.
+
+global:
+  observability:
+    environment: prod
+
+api:
+  otel:
+    enabled: true
+    otlp:
+      endpoint: http://otel-gateway-collector.observability.svc:4318
+  metrics:
+    vmPodScrape:
+      enabled: true
+
+executor:
+  otel:
+    enabled: true
+    otlp:
+      endpoint: http://otel-gateway-collector.observability.svc:4318
+  metrics:
+    vmPodScrape:
+      enabled: true
+
+registry:
+  otel:
+    enabled: true
+    otlp:
+      endpoint: http://otel-gateway-collector.observability.svc:4318
+  metrics:
+    vmPodScrape:
+      enabled: true

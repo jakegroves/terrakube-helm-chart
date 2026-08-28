@@ -39,4 +39,7 @@ echo "== legacy jaeger fixture assertions =="
 OUT=$(helm template tk "$CHART" -f ci/legacy-jaeger-values.yaml)
 grep -q 'OTEL_TRACES_EXPORTER: "jaeger"' <<<"$OUT"
 
+echo "== example values render =="
+helm template tk "$CHART" -f examples/observability-values.yaml >/dev/null
+
 echo "ALL OK"
