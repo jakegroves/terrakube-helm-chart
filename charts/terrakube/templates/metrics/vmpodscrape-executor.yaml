@@ -1,0 +1,19 @@
+{{- if and .Values.executor.enabled .Values.executor.metrics.vmPodScrape.enabled -}}
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: terrakube-executor
+  labels:
+    {{- include "terrakube.labels" . | nindent 4 }}
+    {{- with .Values.executor.metrics.vmPodScrape.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "terrakube.metricsSelectorLabels" (dict "svc" "executor" "root" $) | nindent 6 }}
+  podMetricsEndpoints:
+    - port: {{ .Values.executor.metrics.port | default "http" }}
+      path: {{ .Values.executor.metrics.path | default "/actuator/prometheus" }}
+      interval: {{ .Values.executor.metrics.interval | default "30s" }}
+{{- end -}}

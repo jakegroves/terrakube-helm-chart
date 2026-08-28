@@ -1,0 +1,19 @@
+{{- if and .Values.registry.enabled .Values.registry.metrics.podMonitor.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: terrakube-registry
+  labels:
+    {{- include "terrakube.labels" . | nindent 4 }}
+    {{- with .Values.registry.metrics.podMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "terrakube.metricsSelectorLabels" (dict "svc" "registry" "root" $) | nindent 6 }}
+  podMetricsEndpoints:
+    - port: {{ .Values.registry.metrics.port | default "http" }}
+      path: {{ .Values.registry.metrics.path | default "/actuator/prometheus" }}
+      interval: {{ .Values.registry.metrics.interval | default "30s" }}
+{{- end -}}

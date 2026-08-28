@@ -1,0 +1,23 @@
+{{- if and .Values.api.enabled .Values.api.metrics.serviceMonitor.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: terrakube-api
+  labels:
+    {{- include "terrakube.labels" . | nindent 4 }}
+    {{- with .Values.api.metrics.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "terrakube.metricsSelectorLabels" (dict "svc" "api" "root" $) | nindent 6 }}
+  endpoints:
+    - port: {{ .Values.api.metrics.port | default "http" }}
+      path: {{ .Values.api.metrics.path | default "/actuator/prometheus" }}
+      interval: {{ .Values.api.metrics.interval | default "30s" }}
+      {{- with .Values.api.metrics.serviceMonitor.relabelings }}
+      relabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end -}}
