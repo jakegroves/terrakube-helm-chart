@@ -23,11 +23,6 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
-{{- if and .Values.registry.otel.enabled .Values.registry.otel.metrics }}
-    - name: otel-metrics
-      port: {{ .Values.registry.otel.metrics.port | default "9464" }}
-      targetPort: metrics
-{{- end }}
   selector:
     {{- include "terrakube-registry.labels" . | nindent 4 }}
 {{ end }}

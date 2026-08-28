@@ -24,6 +24,11 @@ spec:
 {{- if .Values.executor.otel.enabled }}
         checksum/otel-config: {{ include (print $.Template.BasePath "/otel-executor.yaml") . | sha256sum }}
 {{- end }}
+        {{- if .Values.executor.metrics.annotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/path: {{ .Values.executor.metrics.path | default "/actuator/prometheus" | quote }}
+        prometheus.io/port: "8090"
+        {{- end }}
         {{- with .Values.executor.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -45,10 +50,6 @@ spec:
         ports:
         - name: http
           containerPort: 8090
-        {{- if and .Values.executor.otel.enabled .Values.executor.otel.metrics }}
-        - name: metrics
-          containerPort: {{ .Values.executor.otel.metrics.port | default "9464" }}
-        {{- end }}
         env:
         {{- if .Values.security.caCerts }}
         - name: SERVICE_BINDING_ROOT

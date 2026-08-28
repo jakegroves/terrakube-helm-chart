@@ -27,6 +27,11 @@ spec:
 {{- if .Values.api.otel.enabled }}
         checksum/otel-config: {{ include (print $.Template.BasePath "/otel-api.yaml") . | sha256sum }}
 {{- end }}
+        {{- if .Values.api.metrics.annotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/path: {{ .Values.api.metrics.path | default "/actuator/prometheus" | quote }}
+        prometheus.io/port: "8080"
+        {{- end }}
     spec:
       {{- with .Values.api.imagePullSecrets | default .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -45,10 +50,6 @@ spec:
         ports:
         - name: http
           containerPort: 8080
-        {{- if and .Values.api.otel.enabled .Values.api.otel.metrics }}
-        - name: metrics
-          containerPort: {{ .Values.api.otel.metrics.port | default "9464" }}
-        {{- end }}
         env:
         {{- if .Values.api.ephemeralExecution.enabled }}
         - name: ExecutorEphemeralNamespace

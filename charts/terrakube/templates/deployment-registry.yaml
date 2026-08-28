@@ -27,6 +27,11 @@ spec:
 {{- if .Values.registry.otel.enabled }}
         checksum/otel-config: {{ include (print $.Template.BasePath "/otel-registry.yaml") . | sha256sum }}
 {{- end }}
+        {{- if .Values.registry.metrics.annotations.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/path: {{ .Values.registry.metrics.path | default "/actuator/prometheus" | quote }}
+        prometheus.io/port: "8075"
+        {{- end }}
     spec:
       {{- with .Values.registry.imagePullSecrets | default .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -45,10 +50,6 @@ spec:
         ports:
         - name: http
           containerPort: 8075
-        {{- if and .Values.registry.otel.enabled .Values.registry.otel.metrics }}
-        - name: metrics
-          containerPort: {{ .Values.registry.otel.metrics.port | default "9464" }}
-        {{- end }}
         env:
         {{- if .Values.security.caCerts }}
         - name: SERVICE_BINDING_ROOT
