@@ -1,0 +1,14 @@
+# victoria-logs-single - https://github.com/VictoriaMetrics/helm-charts
+#
+# Log store. OTLP ingest from the gateway collector, 30d retention.
+
+server:
+  retentionPeriod: 30d
+  persistentVolume:
+    enabled: true
+    storageClassName: gp3
+    size: 50Gi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi

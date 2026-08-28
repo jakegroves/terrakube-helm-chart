@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: obs-victoria-metrics
+spec:
+  sources:
+    - repoURL: https://victoriametrics.github.io/helm-charts
+      chart: victoria-metrics-k8s-stack
+      targetRevision: "0.91.2"
+      helm:
+        valueFiles:
+          - $values/examples/observability/values/victoria-metrics-k8s-stack.values.yaml
+        parameters:
+          - name: vmcluster.spec.vmstorage.replicaCount
+            value: "1"
+    - repoURL: https://github.com/terrakube-io/terrakube-helm-chart
+      targetRevision: main
+      ref: values

@@ -1,0 +1,50 @@
+# tempo-distributed - https://github.com/grafana/helm-charts
+#
+# S3-backed, horizontally scalable trace store. OTLP gRPC ingest from the
+# gateway collector; queried through Grafana's Tempo datasource. metricsGenerator
+# emits span metrics via remote_write into the VMCluster.
+#
+# To swap Tempo for VictoriaTraces later: replace this Application with the
+# VictoriaTraces chart and repoint the gateway's traces exporter - no change to
+# the Terrakube app or app chart.
+
+storage:
+  trace:
+    backend: s3
+    s3:
+      bucket: REPLACE_TEMPO_BUCKET
+      endpoint: s3.REPLACE_REGION.amazonaws.com
+      region: REPLACE_REGION
+
+distributor:
+  replicas: 2
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+
+ingester:
+  replicas: 3
+querier:
+  replicas: 2
+queryFrontend:
+  replicas: 2
+
+compactor:
+  config:
+    compaction:
+      block_retention: 168h   # 7d
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: REPLACE_TEMPO_IRSA_ROLE_ARN
+
+metricsGenerator:
+  enabled: true
+  config:
+    storage:
+      remote_write:
+        - url: http://vminsert-vmcluster-victoria-metrics-k8s-stack.observability.svc:8480/insert/0/prometheus/api/v1/write

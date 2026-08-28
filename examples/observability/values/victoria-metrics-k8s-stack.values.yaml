@@ -1,0 +1,67 @@
+# victoria-metrics-k8s-stack - https://github.com/VictoriaMetrics/helm-charts
+#
+# VM Operator + a VMCluster (HA, 30d retention), VMAgent (picks up the
+# VMPodScrape objects the terrakube chart renders, plus kube-state-metrics /
+# node-exporter / cAdvisor), VMAlert + VMAlertmanager. The bundled Grafana is
+# OFF by default - provision the datasources into your existing Grafana
+# (grafana/datasources.yaml). Flip it on only for a self-contained demo.
+
+victoria-metrics-operator:
+  enabled: true
+
+vmcluster:
+  enabled: true
+  spec:
+    retentionPeriod: "30d"
+    replicationFactor: 2
+    vmstorage:
+      replicaCount: 2
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            resources:
+              requests:
+                storage: 50Gi
+      resources:
+        limits:
+          cpu: "2"
+          memory: 4Gi
+    vmselect:
+      replicaCount: 2
+      resources:
+        limits:
+          cpu: "1"
+          memory: 1Gi
+    vminsert:
+      replicaCount: 2
+      resources:
+        limits:
+          cpu: "1"
+          memory: 1Gi
+
+vmagent:
+  enabled: true
+  spec:
+    selectAllByDefault: true
+    externalLabels:
+      cluster: REPLACE_CLUSTER_NAME
+
+vmalert:
+  enabled: true
+  spec:
+    selectAllByDefault: true
+
+alertmanager:
+  enabled: true
+
+grafana:
+  enabled: false
+
+kube-state-metrics:
+  enabled: true
+prometheus-node-exporter:
+  enabled: true
+
+defaultRules:
+  create: true

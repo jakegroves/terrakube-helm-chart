@@ -1,0 +1,21 @@
+# App-of-apps root. Point `path` at the overlay for the environment you are
+# deploying (overlays/dev | overlays/staging | overlays/prod), or parameterise it
+# per ArgoCD project.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability-root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/terrakube-io/terrakube-helm-chart
+    targetRevision: main
+    path: examples/observability/argocd/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

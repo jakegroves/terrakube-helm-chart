@@ -1,0 +1,110 @@
+# opentelemetry-kube-stack - https://github.com/open-telemetry/opentelemetry-helm-charts
+#
+# Installs the OTel Operator plus two collectors:
+#   daemon  (DaemonSet) - host/kubelet metrics, pod-log tailing, k8s attributes;
+#            forwards to the gateway. Terrakube's Java pods are excluded from log
+#            tailing because their agent ships logs over OTLP directly.
+#   gateway (Deployment x2) - k8sattributes -> tail sampling -> batch -> fan out
+#            to Tempo (traces) and VictoriaLogs (logs).
+#
+# The `Instrumentation` CR is installed but unused - Terrakube keeps the agent
+# baked into its images via the Paketo buildpack.
+#
+# NOTE: preset names and the `collectors.<name>.config` layout track the chart
+# version. Verify against `helm show values open-telemetry/opentelemetry-kube-stack`
+# for the version pinned in applications/otel-kube-stack.yaml before applying.
+
+opentelemetry-operator:
+  enabled: true
+
+instrumentation:
+  enabled: true
+  exporter:
+    endpoint: http://otel-gateway-collector.observability.svc:4318
+
+collectors:
+  daemon:
+    mode: daemonset
+    presets:
+      hostMetrics:
+        enabled: true
+      kubeletMetrics:
+        enabled: true
+      kubernetesAttributes:
+        enabled: true
+      logsCollection:
+        enabled: true
+    config:
+      processors:
+        filter/exclude_terrakube_java:
+          logs:
+            exclude:
+              match_type: regexp
+              resource_attributes:
+                - key: k8s.pod.name
+                  value: "^terrakube-(api|executor|registry).*"
+        batch: {}
+      exporters:
+        otlp/gateway:
+          endpoint: otel-gateway-collector.observability.svc:4317
+          tls:
+            insecure: true
+      service:
+        pipelines:
+          logs:
+            processors: [filter/exclude_terrakube_java, batch]
+            exporters: [otlp/gateway]
+          traces:
+            exporters: [otlp/gateway]
+
+  gateway:
+    mode: deployment
+    replicas: 2
+    presets:
+      kubernetesAttributes:
+        enabled: true
+    config:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+              cors:
+                allowed_origins:
+                  - "https://REPLACE_UI_ORIGIN"
+      processors:
+        batch: {}
+        tail_sampling:
+          decision_wait: 10s
+          policies:
+            - name: errors
+              type: status_code
+              status_code:
+                status_codes: [ERROR]
+            - name: slow
+              type: latency
+              latency:
+                threshold_ms: 1000
+            - name: baseline
+              type: probabilistic
+              probabilistic:
+                sampling_percentage: 10
+      exporters:
+        otlp/tempo:
+          endpoint: tempo-distributor.observability.svc:4317
+          tls:
+            insecure: true
+        otlphttp/victorialogs:
+          logs_endpoint: http://victoria-logs-victoria-logs-single-server.observability.svc:9428/insert/opentelemetry/v1/logs
+      service:
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [k8sattributes, tail_sampling, batch]
+            exporters: [otlp/tempo]
+          logs:
+            receivers: [otlp]
+            processors: [k8sattributes, batch]
+            exporters: [otlphttp/victorialogs]
