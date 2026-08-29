@@ -40,6 +40,34 @@ yq '.spec.groups[].name' rules/vmrules-usage.yaml | grep -q 'terrakube-usage.rul
   || { echo "missing usage recording rules" >&2; exit 1; }
 echo "  ok"
 
+echo "== traces / logs dashboards present =="
+for d in terrakube-logs traces ui-rum platform-health; do
+  f="grafana/dashboards/$d.json"
+  test -f "$f" || { echo "missing $f" >&2; exit 1; }
+  python3 -m json.tool "$f" >/dev/null
+  echo "  ok $d"
+done
+python3 - <<'PY'
+import json
+d = json.load(open("grafana/dashboards/terrakube-logs.json"))
+qs = [v.get("query") for v in d["templating"]["list"] if v.get("type") == "datasource"]
+assert "victoriametrics-logs-datasource" in qs, "logs dashboard has no VictoriaLogs datasource var"
+assert all(t.get("expr") for p in d["panels"] for t in p.get("targets", [])), "empty target in terrakube-logs"
+PY
+echo "  ok terrakube-logs structure"
+
+echo "== tempo metrics-generator processors enabled =="
+grep -Eq 'span-metrics' values/tempo-distributed.values.yaml \
+  && grep -Eq 'service-graphs' values/tempo-distributed.values.yaml \
+  || { echo "tempo-distributed values missing generator processors" >&2; exit 1; }
+echo "  ok"
+
+echo "== datasource cross-links present =="
+grep -q 'derivedFields' grafana/datasources.yaml || { echo "no log derivedFields" >&2; exit 1; }
+grep -q 'exemplarTraceIdDestinations' grafana/datasources.yaml || { echo "no exemplar destinations" >&2; exit 1; }
+grep -q 'tracesToMetrics' grafana/datasources.yaml || { echo "no tracesToMetrics" >&2; exit 1; }
+echo "  ok"
+
 echo "== datasources ConfigMap is valid yaml =="
 yq . grafana/datasources.yaml >/dev/null && echo "  ok"
 

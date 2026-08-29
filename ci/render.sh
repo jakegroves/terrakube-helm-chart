@@ -50,4 +50,12 @@ for d in terrakube-runs terrakube-flow terrakube-resources-registry; do
 done
 echo "ok"
 
+echo "== traces / logs dashboards present =="
+for d in terrakube-logs traces ui-rum platform-health; do
+  test -f "examples/observability/grafana/dashboards/$d.json"
+  python3 -m json.tool "examples/observability/grafana/dashboards/$d.json" >/dev/null
+done
+grep -q 'metrics_generator\|metricsGenerator' examples/observability/values/tempo-distributed.values.yaml
+echo "ok"
+
 echo "ALL OK"
