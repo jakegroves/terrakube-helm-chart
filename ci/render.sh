@@ -51,7 +51,7 @@ done
 echo "ok"
 
 echo "== traces / logs dashboards present =="
-for d in terrakube-logs traces ui-rum platform-health; do
+for d in terrakube-logs traces ui-rum platform-health terrakube-observability-cost; do
   test -f "examples/observability/grafana/dashboards/$d.json"
   python3 -m json.tool "examples/observability/grafana/dashboards/$d.json" >/dev/null
 done

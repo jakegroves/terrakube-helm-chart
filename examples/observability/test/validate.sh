@@ -41,7 +41,7 @@ yq '.spec.groups[].name' rules/vmrules-usage.yaml | grep -q 'terrakube-usage.rul
 echo "  ok"
 
 echo "== traces / logs dashboards present =="
-for d in terrakube-logs traces ui-rum platform-health; do
+for d in terrakube-logs traces ui-rum platform-health terrakube-observability-cost; do
   f="grafana/dashboards/$d.json"
   test -f "$f" || { echo "missing $f" >&2; exit 1; }
   python3 -m json.tool "$f" >/dev/null
