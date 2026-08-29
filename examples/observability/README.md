@@ -42,6 +42,7 @@ same.
 | `grafana/` | datasources ConfigMap (+ cross-signal links) + dashboards: `dashboards-generic/` (metrics) and `dashboards/` (Traces, Logs, UI RUM, Platform Health) |
 | `rules/` | `VMRule` SLO burn-rate + symptom alerts, `SLO.md` |
 | `test/validate.sh` | offline checks (kustomize build, yaml/json lint) |
+| `SIZING.md` | cardinality/storage formula, tuning knobs, and how to measure your own scale with `telemetry-compose/loadgen/` |
 
 ## Prerequisites
 
