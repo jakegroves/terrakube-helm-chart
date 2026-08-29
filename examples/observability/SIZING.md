@@ -100,31 +100,47 @@ cd telemetry-compose/loadgen
 Snapshot the drivers:
 
 ```
-count({__name__=~"terrakube_.*"})                                    # Terrakube cardinality
-count({__name__!=""})                                                 # total active series
-sum(rate(vm_rows_inserted_total[5m]))                                 # metrics ingest samples/s
-deriv(sum(vm_data_size_bytes)[30m:5m]) * 86400 / 1e6                  # VM disk growth MB/day
-sum(rate(vl_bytes_ingested_total[5m]))                                # log ingest bytes/s
-process_cpu_usage{service="terrakube-api"}                            # api CPU (0-1 per core)
-process_resident_memory_bytes{service="terrakube-api"} / 1024 / 1024  # api RSS MB
-max by (job) (scrape_duration_seconds)                                # scrape cost
+count({__name__=~"terrakube_.*"})                                          # Terrakube cardinality
+count({__name__!=""})                                                       # total active series
+count(traces_spanmetrics_calls_total)                                       # span-metrics cardinality
+sum(rate(vm_rows_inserted_total[5m]))                                       # metrics ingest samples/s
+deriv(sum(vm_data_size_bytes)[30m:5m]) * 3600 / 1e6                         # VM disk growth MB/hour
+sum(rate(vl_bytes_ingested_total[5m]))                                      # log ingest bytes/s
+process_cpu_usage{service="terrakube-api"}                                  # api CPU (0-1 per core)
+sum(jvm_memory_used_bytes{service="terrakube-api",area="heap"}) /1024/1024  # api heap MB
+sum(jvm_memory_used_bytes{service="terrakube-executor",area="heap"}) /1024/1024
+max by (job) (scrape_duration_seconds)                                      # scrape cost
 ```
+
+(Terrakube's services expose `jvm_*` and `process_cpu_usage`, not `process_resident_memory_bytes`.)
 
 ## 5. Captured reference run
 
-**telemetry-compose from-source + backend, WSL2 (16 vCPU / 15 GB), 2026-08-29** —
-one data point on one machine; run §4 for yours.
+**telemetry-compose from-source loop + backend, WSL2 (16 vCPU / 15 GB RAM),
+2026-08-29** — one data point on one machine; run §4 for yours.
 
-| Metric | 1 concurrent | 10 | 50 | 100 |
-|---|---|---|---|---|
-| Terrakube active series | TBD-task9 | TBD-task9 | TBD-task9 | TBD-task9 |
-| VM ingest (samples/s) | TBD-task9 | TBD-task9 | TBD-task9 | TBD-task9 |
-| VM disk growth (MB/h) | TBD-task9 | TBD-task9 | TBD-task9 | TBD-task9 |
-| api CPU (cores) | TBD-task9 | TBD-task9 | TBD-task9 | TBD-task9 |
-| api RSS (MB) | TBD-task9 | TBD-task9 | TBD-task9 | TBD-task9 |
-| executor RSS (MB) | TBD-task9 | TBD-task9 | TBD-task9 | TBD-task9 |
-| scrape p95 (ms) | TBD-task9 | TBD-task9 | TBD-task9 | TBD-task9 |
-| collector export fail/s | TBD-task9 | TBD-task9 | TBD-task9 | TBD-task9 |
+`loadgen.sh seed --orgs 4 --workspaces 4` then
+`run --rate 24/min --duration 6m --mix plan=45,apply=40,reject=10,fail=5`
+(≈130 jobs) — measured mid-run, backend on **fresh** stores:
+
+| Metric | value |
+|---|---|
+| total active series | ~12 300 |
+| Terrakube (`terrakube_*`) series | ~66 (4 orgs; grows toward ~130 as the job queue drains) |
+| span-metrics (`traces_spanmetrics_*`) series | ~520 |
+| metrics ingest | ~700 samples/s |
+| VictoriaMetrics disk growth | ~21 MB/hour |
+| log ingest | ~78 KB/s |
+| api heap | ~800 MB · api CPU <0.01 core (idle — the **executor** is the serial bottleneck) |
+| executor heap | ~220 MB |
+| max scrape duration | 0.01 s |
+| collector export failures | 0 /s |
+
+Notes: a single from-source executor processes jobs serially (~15–20 s each), so
+`--rate` above ~4/min just deepens the queue — visible as rising
+`terrakube_job_queue_wait_seconds` on the **Flow Efficiency** dashboard, which is
+itself a useful thing to demo. For a throughput curve, scale executor replicas
+(`executor.replicaCount` in the chart) and re-run.
 
 ## 6. Reference-stack metric job names
 
