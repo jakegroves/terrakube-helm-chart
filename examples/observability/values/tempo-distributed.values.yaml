@@ -45,6 +45,21 @@ serviceAccount:
 metricsGenerator:
   enabled: true
   config:
+    processor:
+      span_metrics:
+        dimensions: [service.name, span.name, span.kind, status.code, http.route]
+        histogram_buckets: [0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60]
+      service_graphs:
+        dimensions: [http.route]
     storage:
       remote_write:
         - url: http://vminsert-vmcluster-victoria-metrics-k8s-stack.observability.svc:8480/insert/0/prometheus/api/v1/write
+          send_exemplars: true
+
+# tempo-distributed activates generator processors per-tenant via overrides.defaults
+# (chart 1.61.3). Without this, metricsGenerator.enabled deploys the component but it
+# generates nothing.
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [service-graphs, span-metrics]
