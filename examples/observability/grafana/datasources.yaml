@@ -48,6 +48,7 @@ data:
         access: proxy
         url: http://victoria-logs-victoria-logs-single-server.observability.svc:9428
         jsonData:
+          maxLines: 1000
           derivedFields:
             - name: TraceID
               matcherType: label
