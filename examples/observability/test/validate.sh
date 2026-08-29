@@ -19,7 +19,7 @@ for f in rules/*.yaml; do yq . "$f" >/dev/null && echo "  ok $(basename "$f")"; 
 echo "== dashboards are valid json =="
 for f in grafana/dashboards*/*.json; do python3 -m json.tool "$f" >/dev/null && echo "  ok $(basename "$f")"; done
 
-echo "== business dashboards present with a datasource variable =="
+echo "== activity dashboards present with a datasource variable =="
 for d in terrakube-runs terrakube-flow terrakube-resources-registry; do
   f="grafana/dashboards-generic/$d.json"
   test -f "$f" || { echo "missing $f" >&2; exit 1; }
@@ -35,9 +35,9 @@ PY
   echo "  ok $d"
 done
 
-echo "== business rules present =="
-yq '.spec.groups[].name' rules/vmrules-business.yaml | grep -q 'terrakube-business.rules' \
-  || { echo "missing business recording rules" >&2; exit 1; }
+echo "== usage rules present =="
+yq '.spec.groups[].name' rules/vmrules-usage.yaml | grep -q 'terrakube-usage.rules' \
+  || { echo "missing usage recording rules" >&2; exit 1; }
 echo "  ok"
 
 echo "== datasources ConfigMap is valid yaml =="

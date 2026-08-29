@@ -1,14 +1,14 @@
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMRule
 metadata:
-  name: terrakube-business
+  name: terrakube-usage
   namespace: observability
   labels:
-    role: business
+    role: usage
 spec:
   groups:
-    # ---- recording rules feeding the business dashboards ----
-    - name: terrakube-business.rules
+    # ---- recording rules feeding the run / flow / resource dashboards ----
+    - name: terrakube-usage.rules
       interval: 1m
       rules:
         - record: terrakube:run_success_rate:ratio_rate1h
@@ -34,7 +34,7 @@ spec:
 
     # ---- opt-in alerts: ship inert (`and vector(0)` never fires) ----
     # Remove the `and vector(0)` clause and wire a VMAlert notifier to activate. See SLO.md.
-    - name: terrakube-business.alerts
+    - name: terrakube-usage.alerts
       interval: 1m
       rules:
         - alert: TerrakubeRunFailureRateHigh

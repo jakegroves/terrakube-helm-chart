@@ -51,9 +51,9 @@ user actions, not reliability failures.
 
 ---
 
-## 4. Business rules (`vmrules-business.yaml`)
+## 4. Run, flow & resource metrics (`vmrules-usage.yaml`)
 
-Not SLOs — supporting recording rules for the three business dashboards
+Not SLOs — supporting recording rules for the three activity dashboards
 (`terrakube-runs`, `terrakube-flow`, `terrakube-resources-registry`) plus three
 alerts that ship **inert**.
 

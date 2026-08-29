@@ -42,8 +42,8 @@ grep -q 'OTEL_TRACES_EXPORTER: "jaeger"' <<<"$OUT"
 echo "== example values render =="
 helm template tk "$CHART" -f examples/observability-values.yaml >/dev/null
 
-echo "== business observability assets present =="
-test -f examples/observability/rules/vmrules-business.yaml
+echo "== run/flow/resource observability assets present =="
+test -f examples/observability/rules/vmrules-usage.yaml
 for d in terrakube-runs terrakube-flow terrakube-resources-registry; do
   test -f "examples/observability/grafana/dashboards-generic/$d.json"
   python3 -m json.tool "examples/observability/grafana/dashboards-generic/$d.json" >/dev/null
