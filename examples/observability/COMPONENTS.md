@@ -7,9 +7,10 @@ matching `applications/*.yaml` and re-run `test/validate.sh` when upgrading.
 |---|---|---|---|---|
 | OTel Operator + collectors | `open-telemetry/opentelemetry-kube-stack` | `0.20.5` | https://github.com/open-telemetry/opentelemetry-helm-charts | DaemonSet + gateway collectors, `Instrumentation` CR |
 | Metrics | `vm/victoria-metrics-k8s-stack` | `0.91.2` | https://github.com/VictoriaMetrics/helm-charts | VM Operator, VMCluster (HA, 30d), VMAgent, VMAlert, Alertmanager, kube-state-metrics, node-exporter |
-| Traces | `grafana/tempo-distributed` | `1.61.3` | https://github.com/grafana/helm-charts | S3-backed trace store, span-metrics generator |
+| Traces | `grafana/tempo-distributed` | `1.61.3` | https://github.com/grafana/helm-charts | S3-backed trace store; metrics-generator (span-metrics + service-graphs) enabled, remote-writes to the VMCluster |
 | Logs | `vm/victoria-logs-single` | `0.13.9` | https://github.com/VictoriaMetrics/helm-charts | OTLP log store, 30d |
-| Dashboards / alerts | (this repo) | — | `grafana/`, `rules/` | 4 generic + 3 reference dashboards, SLO + symptom VMRules |
+| Grafana `victoriametrics-logs-datasource` plugin | — | — | https://github.com/VictoriaMetrics/victorialogs-datasource | queried by `terrakube-logs.json` and the log `derivedFields` |
+| Dashboards / alerts | (this repo) | — | `grafana/`, `rules/` | 7 metric dashboards (`dashboards-generic/`) + Traces / Logs / UI RUM / Platform Health (`dashboards/`), SLO + symptom + usage VMRules |
 
 ## Approximate footprint (prod overlay)
 

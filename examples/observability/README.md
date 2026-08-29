@@ -11,12 +11,25 @@ What this directory gives you, if you want a turnkey self-hosted backend:
 
 ```
 OpenTelemetry Collector (kube-stack)  ─┬─► Tempo            (traces)
+                                       │      └─ metrics-generator ─► VictoriaMetrics
+                                       │         (span metrics + service graph)
                                        └─► VictoriaLogs     (logs)
 VMAgent scrapes /actuator/prometheus  ───► VictoriaMetrics  (metrics, 30d)
                                             │
 Grafana ◄───────────────────────────────────┘  + Tempo + VictoriaLogs datasources
 VMAlert ──► Alertmanager                         (SLO + symptom rules)
 ```
+
+Tempo's metrics-generator is enabled in `values/tempo-distributed.values.yaml`
+(`metricsGenerator` + `overrides.defaults.metrics_generator.processors:
+[service-graphs, span-metrics]`) and remote-writes `traces_spanmetrics_*` /
+`traces_service_graph_*` into the VMCluster. The datasources
+(`grafana/datasources.yaml`) wire the three signals together: trace→logs
+(`tracesToLogsV2`), log→trace (VictoriaLogs `derivedFields`), trace→metrics and
+metric→trace exemplars. `grafana/dashboards/` includes `terrakube-logs.json`
+(LogsQL) alongside `traces.json` / `ui-rum.json` / `platform-health.json` —
+identical to the copies in `telemetry-compose/` so local and cluster look the
+same.
 
 ## Layout
 
@@ -26,7 +39,7 @@ VMAlert ──► Alertmanager                         (SLO + symptom rules)
 | `applications/` | one ArgoCD `Application` per chart (multi-source: chart + a `$values` ref back to this repo) |
 | `argocd/overlays/{dev,staging,prod}` | kustomize; per-env sizing patch |
 | `argocd/root-app.yaml` | app-of-apps — point its `path:` at the overlay for your env |
-| `grafana/` | datasources ConfigMap + dashboards (generic + reference) |
+| `grafana/` | datasources ConfigMap (+ cross-signal links) + dashboards: `dashboards-generic/` (metrics) and `dashboards/` (Traces, Logs, UI RUM, Platform Health) |
 | `rules/` | `VMRule` SLO burn-rate + symptom alerts, `SLO.md` |
 | `test/validate.sh` | offline checks (kustomize build, yaml/json lint) |
 
