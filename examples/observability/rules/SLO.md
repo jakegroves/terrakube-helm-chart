@@ -48,3 +48,31 @@ global p95 noisy).
 
 `cancelled` / `rejected` / `waitingApproval` transitions are excluded — they are
 user actions, not reliability failures.
+
+---
+
+## 4. Business rules (`vmrules-business.yaml`)
+
+Not SLOs — supporting recording rules for the three business dashboards
+(`terrakube-runs`, `terrakube-flow`, `terrakube-resources-registry`) plus three
+alerts that ship **inert**.
+
+**Recording rules**
+
+| Rule | Feeds |
+|---|---|
+| `terrakube:run_success_rate:ratio_rate1h` / `:ratio_rate6h` | success-rate SLI panels |
+| `terrakube:run_success_rate:ratio_rate1h:by_org` | per-org failure tables |
+| `terrakube:runs:rate1d` | throughput stat |
+| `terrakube:run_duration_seconds:p95_rate1h` | duration stat |
+| `terrakube:approval_wait_seconds:p95_rate1h` | approval-wait stat |
+| `terrakube:resource_changes:rate1d` | resource-change trends |
+
+**Opt-in alerts** — each expression ends with `and vector(0)`, so it never
+fires. To enable: delete that clause and configure a VMAlert notifier.
+
+| Alert | Condition (once enabled) |
+|---|---|
+| `TerrakubeRunFailureRateHigh` | 1h success rate < 0.8, for 30m |
+| `TerrakubeApprovalQueueBacklog` | > 10 runs awaiting approval, for 1h |
+| `TerrakubeQueueWaitSLOBreach` | p95 job queue wait > 300s, for 15m |
