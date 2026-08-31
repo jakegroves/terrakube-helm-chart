@@ -5,9 +5,16 @@ cd "$(dirname "$0")/.."
 echo "== kustomize overlays build =="
 for env in dev staging prod; do
   kustomize build "argocd/overlays/$env" >/dev/null
-  n=$(kustomize build "argocd/overlays/$env" | grep -c 'kind: Application')
+  out=$(kustomize build "argocd/overlays/$env")
+  n=$(grep -c 'kind: Application' <<<"$out")
   test "$n" = "4" || { echo "expected 4 Applications in $env, got $n" >&2; exit 1; }
-  echo "  $env: 4 Applications"
+  n_ns=$(yq -N 'select(.kind=="Application") | .spec.syncPolicy.managedNamespaceMetadata.labels."pod-security.kubernetes.io/enforce"' <<<"$out" | grep -c 'privileged')
+  test "$n_ns" = "4" || { echo "$env: expected 4 apps with managedNamespaceMetadata, got $n_ns" >&2; exit 1; }
+  waves=$(yq -N 'select(.kind=="Application") | .metadata.name + " " + (.metadata.annotations["argocd.argoproj.io/sync-wave"] // "MISSING")' <<<"$out")
+  grep -q 'MISSING' <<<"$waves" && { echo "$env: an Application has no sync-wave: $waves" >&2; exit 1; }
+  grep -q 'obs-victoria-metrics 0' <<<"$waves" || { echo "$env: VM not at wave 0" >&2; exit 1; }
+  grep -q 'obs-otel-kube-stack 2' <<<"$waves" || { echo "$env: collector not at wave 2 ($waves)" >&2; exit 1; }
+  echo "  $env: 4 Applications, ordered, namespace metadata set"
 done
 
 echo "== values files are valid yaml =="
