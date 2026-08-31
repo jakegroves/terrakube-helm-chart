@@ -31,7 +31,6 @@ spec:
             / clamp_min(sum by (organization) (rate(terrakube_run_finished_total[1h])), 0.0001)
         - record: terrakube:resource_changes:rate1d
           expr: sum by (phase, action) (increase(terrakube_resource_changes_total[1d]))
-
     # ---- opt-in alerts: ship inert (`and vector(0)` never fires) ----
     # Remove the `and vector(0)` clause and wire a VMAlert notifier to activate. See SLO.md.
     - name: terrakube-usage.alerts
@@ -40,18 +39,21 @@ spec:
         - alert: TerrakubeRunFailureRateHigh
           expr: (terrakube:run_success_rate:ratio_rate1h < 0.8) and vector(0)
           for: 30m
-          labels: { severity: warning }
+          labels:
+            severity: warning
           annotations:
-            summary: "Terrakube run success rate below 80% for 30m"
+            summary: Terrakube run success rate below 80% for 30m
         - alert: TerrakubeApprovalQueueBacklog
           expr: (sum(terrakube_run_awaiting_approval) > 10) and vector(0)
           for: 1h
-          labels: { severity: warning }
+          labels:
+            severity: warning
           annotations:
-            summary: "More than 10 runs awaiting approval for over an hour"
+            summary: More than 10 runs awaiting approval for over an hour
         - alert: TerrakubeQueueWaitSLOBreach
           expr: (histogram_quantile(0.95, sum by (le) (rate(terrakube_job_queue_wait_seconds_bucket[15m]))) > 300) and vector(0)
           for: 15m
-          labels: { severity: warning }
+          labels:
+            severity: warning
           annotations:
-            summary: "p95 job queue wait above 5m"
+            summary: p95 job queue wait above 5m

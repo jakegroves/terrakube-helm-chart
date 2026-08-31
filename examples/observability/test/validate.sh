@@ -35,9 +35,24 @@ PY
   echo "  ok $d"
 done
 
-echo "== usage rules present =="
-yq '.spec.groups[].name' rules/vmrules-usage.yaml | grep -q 'terrakube-usage.rules' \
-  || { echo "missing usage recording rules" >&2; exit 1; }
+echo "== rule bodies are CRD-neutral and present =="
+for f in rules/terrakube-slo.rules.yaml rules/terrakube-symptoms.rules.yaml rules/terrakube-usage.rules.yaml; do
+  test -f "$f" || { echo "missing $f" >&2; exit 1; }
+  yq -e '.groups | (tag == "!!seq" and length > 0)' "$f" >/dev/null \
+    || { echo "$f has no groups: list" >&2; exit 1; }
+  echo "  ok $(basename "$f")"
+done
+yq -e '[.groups[].name] | any_c(. == "terrakube-usage.rules")' rules/terrakube-usage.rules.yaml >/dev/null \
+  || { echo "usage recording rules missing" >&2; exit 1; }
+
+echo "== committed VMRules match the generated output =="
+tmp=$(mktemp -d)
+RULES_OUT="$tmp" bash rules/generate-vmrules.sh
+for f in vmrules-slo.yaml vmrules-symptoms.yaml vmrules-usage.yaml; do
+  diff <(yq -P 'sort_keys(..)' "rules/$f") <(yq -P 'sort_keys(..)' "$tmp/$f") \
+    || { echo "rules/$f is stale - run rules/generate-vmrules.sh" >&2; exit 1; }
+done
+rm -rf "$tmp"
 echo "  ok"
 
 echo "== traces / logs dashboards present =="

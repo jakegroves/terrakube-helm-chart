@@ -51,11 +51,14 @@ user actions, not reliability failures.
 
 ---
 
-## 4. Run, flow & resource metrics (`vmrules-usage.yaml`)
+## 4. Run, flow & resource metrics (`terrakube-usage.rules.yaml`)
 
 Not SLOs — supporting recording rules for the three activity dashboards
 (`terrakube-runs`, `terrakube-flow`, `terrakube-resources-registry`) plus three
 alerts that ship **inert**.
+
+See [`README.md`](README.md) for how these load under the VictoriaMetrics
+operator, the Prometheus operator, or vanilla Prometheus.
 
 **Recording rules**
 
