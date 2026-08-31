@@ -39,7 +39,7 @@ same.
 | `applications/` | one ArgoCD `Application` per chart (multi-source: chart + a `$values` ref back to this repo) |
 | `argocd/overlays/{dev,staging,prod}` | kustomize; per-env sizing patch |
 | `argocd/root-app.yaml` | app-of-apps — point its `path:` at the overlay for your env |
-| `grafana/` | datasources ConfigMap (+ cross-signal links) + dashboards: `dashboards-generic/` (metrics) and `dashboards/` (Traces, Logs, UI RUM, Platform Health) |
+| `grafana/` | datasources ConfigMap + dashboards (`dashboards/` cross-signal, `dashboards-generic/` metrics), each kustomize-wrapped into sidecar ConfigMaps; `kubectl apply -k grafana/` |
 | `rules/` | `VMRule` SLO burn-rate + symptom alerts, `SLO.md` |
 | `test/validate.sh` | offline checks (kustomize build, yaml/json lint) |
 | `SIZING.md` | cardinality/storage formula, tuning knobs, and how to measure your own scale with `telemetry-compose/loadgen/` |
@@ -64,13 +64,31 @@ same.
 
 ## Grafana
 
-Two options, documented in `grafana/`:
+The reference stack does **not** bundle Grafana (`grafana.enabled: false` in
+`values/victoria-metrics-k8s-stack.values.yaml`) — bring your own and provision
+via its sidecar:
 
-- **Existing Grafana (recommended):** apply `grafana/datasources.yaml` (a sidecar
-  ConfigMap) and load the dashboard JSON via your usual mechanism.
-- **Self-contained demo:** set `grafana.enabled: true` in
-  `values/victoria-metrics-k8s-stack.values.yaml`; it picks up the datasources
-  ConfigMap and the dashboards automatically.
+1. **Sidecar (recommended)** — a Grafana running the standard dashboard/datasource
+   sidecar (both `victoria-metrics-k8s-stack` and `kube-prometheus-stack` ship one):
+   ```bash
+   kubectl apply -k examples/observability/grafana/
+   ```
+   Datasources land from the `grafana_datasource: "1"` ConfigMap; the 12
+   dashboards from `grafana_dashboard: "1"` ConfigMaps, foldered "Terrakube
+   Platform" (cross-signal) and "Terrakube Infrastructure" (metrics).
+2. **grafana-operator** — point a `GrafanaDashboard` `spec.configMapRef` at each
+   generated `tk-dash-*` ConfigMap.
+3. **Terraform** — `for_each` the `grafana_dashboard` provider over
+   `grafana/dashboards*/*.json`.
+4. **Manual** — Dashboards → Import → paste the JSON.
+
+Adding a dashboard: drop the JSON in `dashboards/` (cross-signal) or
+`dashboards-generic/` (metrics), add a `configMapGenerator` entry in that
+directory's `kustomization.yaml`, and re-run `test/validate.sh`.
+
+Alternatively, set `grafana.enabled: true` in
+`values/victoria-metrics-k8s-stack.values.yaml` for a self-contained demo Grafana
+that picks up both ConfigMap sets automatically.
 
 ## Swapping the trace backend
 

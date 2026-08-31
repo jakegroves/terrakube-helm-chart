@@ -56,6 +56,19 @@ assert all(t.get("expr") for p in d["panels"] for t in p.get("targets", [])), "e
 PY
 echo "  ok terrakube-logs structure"
 
+echo "== grafana kustomizations build =="
+for d in grafana/dashboards grafana/dashboards-generic grafana; do
+  kustomize build "$d" >/dev/null || { echo "kustomize build $d failed" >&2; exit 1; }
+done
+built=$(kustomize build grafana)
+n_dash=$(yq -N 'select(.kind == "ConfigMap" and .metadata.labels.grafana_dashboard == "1") | .metadata.name' <<<"$built" | grep -c .)
+test "$n_dash" -ge 12 || { echo "expected >=12 dashboard ConfigMaps, got $n_dash" >&2; exit 1; }
+n_folder=$(yq -N 'select(.kind == "ConfigMap" and .metadata.labels.grafana_dashboard == "1") | .metadata.annotations.grafana_folder' <<<"$built" | grep -c 'Terrakube')
+test "$n_folder" = "$n_dash" || { echo "some dashboard ConfigMaps lack a grafana_folder annotation" >&2; exit 1; }
+# every source dashboard JSON parses (kustomize build already fails on a missing file)
+for f in grafana/dashboards*/*.json; do python3 -m json.tool "$f" >/dev/null; done
+echo "  ok $n_dash dashboard ConfigMaps"
+
 echo "== tempo metrics-generator processors enabled =="
 grep -Eq 'span-metrics' values/tempo-distributed.values.yaml \
   && grep -Eq 'service-graphs' values/tempo-distributed.values.yaml \

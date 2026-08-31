@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: observability
+configMapGenerator:
+  - name: tk-dash-platform-health
+    files: [platform-health.json]
+  - name: tk-dash-terrakube-logs
+    files: [terrakube-logs.json]
+  - name: tk-dash-terrakube-observability-cost
+    files: [terrakube-observability-cost.json]
+  - name: tk-dash-traces
+    files: [traces.json]
+  - name: tk-dash-ui-rum
+    files: [ui-rum.json]
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: Terrakube Platform

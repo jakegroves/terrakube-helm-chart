@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: observability
+configMapGenerator:
+  - name: tk-dash-jvm
+    files: [jvm.json]
+  - name: tk-dash-terrakube-api
+    files: [terrakube-api.json]
+  - name: tk-dash-terrakube-executor
+    files: [terrakube-executor.json]
+  - name: tk-dash-terrakube-flow
+    files: [terrakube-flow.json]
+  - name: tk-dash-terrakube-overview
+    files: [terrakube-overview.json]
+  - name: tk-dash-terrakube-resources-registry
+    files: [terrakube-resources-registry.json]
+  - name: tk-dash-terrakube-runs
+    files: [terrakube-runs.json]
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: Terrakube Infrastructure
