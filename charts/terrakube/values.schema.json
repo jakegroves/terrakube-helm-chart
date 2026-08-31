@@ -113,12 +113,15 @@
                     "type": "object",
                     "properties": {
                         "enabled": {
+                            "description": "Enable the OpenTelemetry Java agent (traces + logs via OTLP). Requires an app image built from Terrakube main.",
                             "type": "boolean"
                         },
                         "serviceName": {
+                            "description": "Overrides OTEL_SERVICE_NAME (default: the lower-case service name, e.g. terrakube-api).",
                             "type": "string"
                         },
                         "protocol": {
+                            "description": "Trace/log export protocol. otlp (default); jaeger and zipkin are deprecated and removed in chart 6.0.0.",
                             "type": "string",
                             "enum": [
                                 "otlp",
@@ -130,9 +133,11 @@
                             "type": "object",
                             "properties": {
                                 "endpoint": {
+                                    "description": "OTLP collector endpoint, e.g. http://otel-collector.observability.svc:4318. Required when otel.enabled and protocol is otlp.",
                                     "type": "string"
                                 },
                                 "protocol": {
+                                    "description": "OTLP wire format: http/protobuf (default) or grpc.",
                                     "type": "string",
                                     "enum": [
                                         "http/protobuf",
@@ -145,12 +150,15 @@
                             "type": "object",
                             "properties": {
                                 "samplerArg": {
+                                    "description": "Argument for the parentbased_traceidratio sampler, e.g. \"0.1\" for 10% head sampling.",
                                     "type": "string"
                                 },
                                 "endpoint": {
+                                    "description": "Deprecated. Legacy jaeger/zipkin trace endpoint; use otel.otlp.endpoint.",
                                     "type": "string"
                                 },
                                 "type": {
+                                    "description": "Deprecated. Legacy exporter selector (jaeger/zipkin); use otel.protocol.",
                                     "type": "string"
                                 }
                             }
@@ -159,6 +167,7 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Ship application logs via the agent's OTLP log appender (default true when otel.enabled).",
                                     "type": "boolean"
                                 }
                             }
@@ -299,27 +308,34 @@
                     "type": "object",
                     "properties": {
                         "enabled": {
+                            "description": "Expose Micrometer metrics on /actuator/prometheus (independent of otel.enabled).",
                             "type": "boolean"
                         },
                         "path": {
+                            "description": "Metrics endpoint path (default /actuator/prometheus).",
                             "type": "string"
                         },
                         "port": {
+                            "description": "Named service port the metrics endpoint is served on (default http).",
                             "type": "string"
                         },
                         "interval": {
+                            "description": "Scrape interval hint written into the generated scrape object (e.g. 30s).",
                             "type": "string"
                         },
                         "serviceMonitor": {
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Render a Prometheus Operator ServiceMonitor. Enable exactly one of serviceMonitor / podMonitor / vmPodScrape / annotations.",
                                     "type": "boolean"
                                 },
                                 "additionalLabels": {
+                                    "description": "Extra labels on the ServiceMonitor (e.g. release: kube-prometheus-stack for selector matching).",
                                     "type": "object"
                                 },
                                 "relabelings": {
+                                    "description": "metricRelabelings/relabelings passed through to the ServiceMonitor endpoint.",
                                     "type": "array"
                                 }
                             }
@@ -328,9 +344,11 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Render a Prometheus Operator PodMonitor. Enable exactly one scrape mode.",
                                     "type": "boolean"
                                 },
                                 "additionalLabels": {
+                                    "description": "Extra labels on the PodMonitor.",
                                     "type": "object"
                                 }
                             }
@@ -339,9 +357,11 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Render a VictoriaMetrics Operator VMPodScrape. Enable exactly one scrape mode.",
                                     "type": "boolean"
                                 },
                                 "additionalLabels": {
+                                    "description": "Extra labels on the VMPodScrape.",
                                     "type": "object"
                                 }
                             }
@@ -350,6 +370,7 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Add prometheus.io/scrape pod annotations for annotation-based scrapers. Enable exactly one scrape mode.",
                                     "type": "boolean"
                                 }
                             }
@@ -622,12 +643,15 @@
                     "type": "object",
                     "properties": {
                         "enabled": {
+                            "description": "Enable the OpenTelemetry Java agent (traces + logs via OTLP). Requires an app image built from Terrakube main.",
                             "type": "boolean"
                         },
                         "serviceName": {
+                            "description": "Overrides OTEL_SERVICE_NAME (default: the lower-case service name, e.g. terrakube-api).",
                             "type": "string"
                         },
                         "protocol": {
+                            "description": "Trace/log export protocol. otlp (default); jaeger and zipkin are deprecated and removed in chart 6.0.0.",
                             "type": "string",
                             "enum": [
                                 "otlp",
@@ -639,9 +663,11 @@
                             "type": "object",
                             "properties": {
                                 "endpoint": {
+                                    "description": "OTLP collector endpoint, e.g. http://otel-collector.observability.svc:4318. Required when otel.enabled and protocol is otlp.",
                                     "type": "string"
                                 },
                                 "protocol": {
+                                    "description": "OTLP wire format: http/protobuf (default) or grpc.",
                                     "type": "string",
                                     "enum": [
                                         "http/protobuf",
@@ -654,12 +680,15 @@
                             "type": "object",
                             "properties": {
                                 "samplerArg": {
+                                    "description": "Argument for the parentbased_traceidratio sampler, e.g. \"0.1\" for 10% head sampling.",
                                     "type": "string"
                                 },
                                 "endpoint": {
+                                    "description": "Deprecated. Legacy jaeger/zipkin trace endpoint; use otel.otlp.endpoint.",
                                     "type": "string"
                                 },
                                 "type": {
+                                    "description": "Deprecated. Legacy exporter selector (jaeger/zipkin); use otel.protocol.",
                                     "type": "string"
                                 }
                             }
@@ -668,6 +697,7 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Ship application logs via the agent's OTLP log appender (default true when otel.enabled).",
                                     "type": "boolean"
                                 }
                             }
@@ -752,27 +782,34 @@
                     "type": "object",
                     "properties": {
                         "enabled": {
+                            "description": "Expose Micrometer metrics on /actuator/prometheus (independent of otel.enabled).",
                             "type": "boolean"
                         },
                         "path": {
+                            "description": "Metrics endpoint path (default /actuator/prometheus).",
                             "type": "string"
                         },
                         "port": {
+                            "description": "Named service port the metrics endpoint is served on (default http).",
                             "type": "string"
                         },
                         "interval": {
+                            "description": "Scrape interval hint written into the generated scrape object (e.g. 30s).",
                             "type": "string"
                         },
                         "serviceMonitor": {
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Render a Prometheus Operator ServiceMonitor. Enable exactly one of serviceMonitor / podMonitor / vmPodScrape / annotations.",
                                     "type": "boolean"
                                 },
                                 "additionalLabels": {
+                                    "description": "Extra labels on the ServiceMonitor (e.g. release: kube-prometheus-stack for selector matching).",
                                     "type": "object"
                                 },
                                 "relabelings": {
+                                    "description": "metricRelabelings/relabelings passed through to the ServiceMonitor endpoint.",
                                     "type": "array"
                                 }
                             }
@@ -781,9 +818,11 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Render a Prometheus Operator PodMonitor. Enable exactly one scrape mode.",
                                     "type": "boolean"
                                 },
                                 "additionalLabels": {
+                                    "description": "Extra labels on the PodMonitor.",
                                     "type": "object"
                                 }
                             }
@@ -792,9 +831,11 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Render a VictoriaMetrics Operator VMPodScrape. Enable exactly one scrape mode.",
                                     "type": "boolean"
                                 },
                                 "additionalLabels": {
+                                    "description": "Extra labels on the VMPodScrape.",
                                     "type": "object"
                                 }
                             }
@@ -803,6 +844,7 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Add prometheus.io/scrape pod annotations for annotation-based scrapers. Enable exactly one scrape mode.",
                                     "type": "boolean"
                                 }
                             }
@@ -1356,12 +1398,15 @@
                     "type": "object",
                     "properties": {
                         "enabled": {
+                            "description": "Enable the OpenTelemetry Java agent (traces + logs via OTLP). Requires an app image built from Terrakube main.",
                             "type": "boolean"
                         },
                         "serviceName": {
+                            "description": "Overrides OTEL_SERVICE_NAME (default: the lower-case service name, e.g. terrakube-api).",
                             "type": "string"
                         },
                         "protocol": {
+                            "description": "Trace/log export protocol. otlp (default); jaeger and zipkin are deprecated and removed in chart 6.0.0.",
                             "type": "string",
                             "enum": [
                                 "otlp",
@@ -1373,9 +1418,11 @@
                             "type": "object",
                             "properties": {
                                 "endpoint": {
+                                    "description": "OTLP collector endpoint, e.g. http://otel-collector.observability.svc:4318. Required when otel.enabled and protocol is otlp.",
                                     "type": "string"
                                 },
                                 "protocol": {
+                                    "description": "OTLP wire format: http/protobuf (default) or grpc.",
                                     "type": "string",
                                     "enum": [
                                         "http/protobuf",
@@ -1388,12 +1435,15 @@
                             "type": "object",
                             "properties": {
                                 "samplerArg": {
+                                    "description": "Argument for the parentbased_traceidratio sampler, e.g. \"0.1\" for 10% head sampling.",
                                     "type": "string"
                                 },
                                 "endpoint": {
+                                    "description": "Deprecated. Legacy jaeger/zipkin trace endpoint; use otel.otlp.endpoint.",
                                     "type": "string"
                                 },
                                 "type": {
+                                    "description": "Deprecated. Legacy exporter selector (jaeger/zipkin); use otel.protocol.",
                                     "type": "string"
                                 }
                             }
@@ -1402,6 +1452,7 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Ship application logs via the agent's OTLP log appender (default true when otel.enabled).",
                                     "type": "boolean"
                                 }
                             }
@@ -1478,27 +1529,34 @@
                     "type": "object",
                     "properties": {
                         "enabled": {
+                            "description": "Expose Micrometer metrics on /actuator/prometheus (independent of otel.enabled).",
                             "type": "boolean"
                         },
                         "path": {
+                            "description": "Metrics endpoint path (default /actuator/prometheus).",
                             "type": "string"
                         },
                         "port": {
+                            "description": "Named service port the metrics endpoint is served on (default http).",
                             "type": "string"
                         },
                         "interval": {
+                            "description": "Scrape interval hint written into the generated scrape object (e.g. 30s).",
                             "type": "string"
                         },
                         "serviceMonitor": {
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Render a Prometheus Operator ServiceMonitor. Enable exactly one of serviceMonitor / podMonitor / vmPodScrape / annotations.",
                                     "type": "boolean"
                                 },
                                 "additionalLabels": {
+                                    "description": "Extra labels on the ServiceMonitor (e.g. release: kube-prometheus-stack for selector matching).",
                                     "type": "object"
                                 },
                                 "relabelings": {
+                                    "description": "metricRelabelings/relabelings passed through to the ServiceMonitor endpoint.",
                                     "type": "array"
                                 }
                             }
@@ -1507,9 +1565,11 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Render a Prometheus Operator PodMonitor. Enable exactly one scrape mode.",
                                     "type": "boolean"
                                 },
                                 "additionalLabels": {
+                                    "description": "Extra labels on the PodMonitor.",
                                     "type": "object"
                                 }
                             }
@@ -1518,9 +1578,11 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Render a VictoriaMetrics Operator VMPodScrape. Enable exactly one scrape mode.",
                                     "type": "boolean"
                                 },
                                 "additionalLabels": {
+                                    "description": "Extra labels on the VMPodScrape.",
                                     "type": "object"
                                 }
                             }
@@ -1529,6 +1591,7 @@
                             "type": "object",
                             "properties": {
                                 "enabled": {
+                                    "description": "Add prometheus.io/scrape pod annotations for annotation-based scrapers. Enable exactly one scrape mode.",
                                     "type": "boolean"
                                 }
                             }
