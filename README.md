@@ -25,6 +25,7 @@ https://docs.terrakube.io/getting-started/deployment/minikube-+-https
 - **Database**: PostgreSQL support with optional external database
 - **Module Registry**: Private Terraform module registry
 - **Workspace Management**: Terraform workspace execution and management
+- **Observability**: OpenTelemetry traces/logs (OTLP) + Prometheus metrics; turnkey self-hosted backend in `examples/observability/`, or bring your own (Grafana Cloud, Datadog, kube-prometheus-stack)
 
 ## Secret Files
 
@@ -744,53 +745,42 @@ Added 2 additional CA certificate(s) to system truststore
 ```
 
 
-### 6. Enable OTEL for Terrakube components
-To enable OTEL for Terrakube components use the following configuration example:
+### 6. Observability (OpenTelemetry + Prometheus)
+
+Terrakube emits vendor-neutral telemetry: OTLP traces and logs from the
+OpenTelemetry Java agent, and Prometheus metrics on `/actuator/prometheus`.
+Point it at any backend — Grafana Cloud, Datadog, `kube-prometheus-stack`, or the
+turnkey stack in [`examples/observability/`](examples/observability/).
+
+Minimal values (see [`examples/observability-values.yaml`](examples/observability-values.yaml)
+for the full copy — that file is canonical):
 
 ```yaml
-## API properties
 api:
-  enabled: true
-  replicaCount: "1"
-  serviceType: "ClusterIP"
   otel:
     enabled: true
-    metrics:
-      port: 8081
-      host: 
-    traces:
-      type: jaeger # or zipkin
-      endpoint: http://jaeger-collector:14268/api/traces
-
-
-## Executor properties
-executor:
-  enabled: true
-  replicaCount: "1"
-  serviceType: "ClusterIP"
-  otel:
-    enabled: true
-    metrics:
-      port: 8081
-      host: 
-    traces:
-      type: zupkin # or jaeger
-      endpoint: zipkin:9411/api/v2/spans
-
-## Registry properties
-registry:
-  enabled: true
-  replicaCount: "1"
-  serviceType: "ClusterIP"
-  otel:
-    enabled: false # or true
-    metrics:
-      port: 8081
-      host: 
-    traces:
-      type: zupkin # or jaeger
-      endpoint: zipkin:9411/api/v2/spans
+    otlp:
+      endpoint: http://otel-collector.observability.svc:4318
+  metrics:
+    serviceMonitor:            # pick exactly ONE of serviceMonitor / podMonitor
+      enabled: true            # / vmPodScrape / annotations to match your cluster
+# repeat the same otel + metrics block under `executor:` and `registry:`
 ```
+
+| Metrics scrape mode | For |
+|---|---|
+| `<svc>.metrics.serviceMonitor.enabled` | Prometheus Operator / kube-prometheus-stack |
+| `<svc>.metrics.podMonitor.enabled` | Prometheus Operator |
+| `<svc>.metrics.vmPodScrape.enabled` | VictoriaMetrics Operator |
+| `<svc>.metrics.annotations.enabled` | `prometheus.io/scrape` annotation scrapers |
+
+Migrating from chart 4.x? The `otel` block changed shape (OTLP-first, jaeger/zipkin
+deprecated) — see [`UPGRADING.md`](UPGRADING.md).
+
+The signal catalog — every metric, span and log field, and how to wire each
+backend — lives in the app repo:
+[`docs/observability.md`](https://github.com/terrakube-io/terrakube/blob/main/docs/observability.md).
+Cardinality and storage sizing: [`examples/observability/SIZING.md`](examples/observability/SIZING.md).
 
 ### 7. Dynamic credentials
 

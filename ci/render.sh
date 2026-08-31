@@ -58,4 +58,12 @@ done
 grep -q 'metrics_generator\|metricsGenerator' examples/observability/values/tempo-distributed.values.yaml
 echo "ok"
 
+echo "== README OTEL section matches the 5.0.0 schema =="
+if grep -nE 'zupkin|type: (jaeger|zipkin)' README.md; then
+  echo "LEAK: README still documents the pre-5.0.0 otel schema" >&2
+  exit 1
+fi
+grep -qE 'otel\.otlp\.endpoint|otlp:' README.md || { echo "README missing the otlp example" >&2; exit 1; }
+echo "clean"
+
 echo "ALL OK"
