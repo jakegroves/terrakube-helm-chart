@@ -27,6 +27,17 @@ to `values.yaml`.
 - `OTEL_SERVICE_NAME` is now lower-case: `TERRAKUBE-API` → `terrakube-api`
   (and `-executor` / `-registry`). Existing trace-backend service lists will
   show the new names alongside the old ones after the upgrade.
+- **Application logs are now ECS-JSON on stdout by default** (app change, not a
+  chart value): `api` / `executor` / `registry` emit one JSON object per line
+  instead of plain text, so a log collector can parse fields and correlate by
+  `trace_id`. If you parse container logs as plain text, either update your
+  pipeline or add `{ name: LOGGING_STRUCTURED_FORMAT_CONSOLE, value: "" }` to
+  `<svc>.env` on each deployment to revert. The bundled `docker-compose` `local`
+  profile already keeps human-readable output.
+- Every application metric now carries a `service` tag (`terrakube-api` /
+  `-executor` / `-registry`). Scrape endpoints are rendered with
+  `honorLabels: true` so this tag is preserved; the shipped dashboards and alert
+  rules select on it.
 
 ### Example
 

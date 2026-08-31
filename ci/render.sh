@@ -34,6 +34,16 @@ echo "== servicemonitor fixture assertions =="
 OUT=$(helm template tk "$CHART" -f ci/servicemonitor-values.yaml)
 test "$(grep -c 'kind: ServiceMonitor' <<<"$OUT")" = "3"
 grep -q 'release: kube-prometheus-stack' <<<"$OUT"
+test "$(grep -c 'honorLabels: true' <<<"$OUT")" = "3"
+
+echo "== otel env var names are valid identifiers =="
+OUT=$(helm template tk "$CHART" -f ci/otlp-values.yaml)
+grep -q 'OTEL_INSTRUMENTATION_LOGBACK_APPENDER_ENABLED' <<<"$OUT"
+grep -q 'OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED' <<<"$OUT"
+! grep -q 'LOGBACK-' <<<"$OUT"
+
+echo "== jaeger fixture disables the otlp log exporter =="
+grep -q 'OTEL_LOGS_EXPORTER: "none"' <<<"$(helm template tk "$CHART" -f ci/legacy-jaeger-values.yaml)"
 
 echo "== legacy jaeger fixture assertions =="
 OUT=$(helm template tk "$CHART" -f ci/legacy-jaeger-values.yaml)

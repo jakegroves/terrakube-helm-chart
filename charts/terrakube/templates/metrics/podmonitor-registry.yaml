@@ -16,4 +16,5 @@ spec:
     - port: {{ .Values.registry.metrics.port | default "http" }}
       path: {{ .Values.registry.metrics.path | default "/actuator/prometheus" }}
       interval: {{ .Values.registry.metrics.interval | default "30s" }}
+      honorLabels: true
 {{- end -}}

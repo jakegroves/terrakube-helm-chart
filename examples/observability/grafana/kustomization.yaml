@@ -1,5 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+# The full reference bundle (datasources + both dashboard sets) belongs in the
+# observability namespace alongside the rest of the stack. Applying
+# dashboards-generic/ on its own instead honours a `-n` flag for a Grafana that
+# lives elsewhere (e.g. kube-prometheus-stack in `monitoring`).
+namespace: observability
 resources:
   - dashboards
   - dashboards-generic

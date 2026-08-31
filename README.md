@@ -764,6 +764,8 @@ api:
   metrics:
     serviceMonitor:            # pick exactly ONE of serviceMonitor / podMonitor
       enabled: true            # / vmPodScrape / annotations to match your cluster
+      additionalLabels:        # kube-prometheus-stack only selects monitors carrying
+        release: kube-prometheus-stack   # its release label (serviceMonitorSelectorNilUsesHelmValues)
 # repeat the same otel + metrics block under `executor:` and `registry:`
 ```
 
@@ -773,6 +775,14 @@ api:
 | `<svc>.metrics.podMonitor.enabled` | Prometheus Operator |
 | `<svc>.metrics.vmPodScrape.enabled` | VictoriaMetrics Operator |
 | `<svc>.metrics.annotations.enabled` | `prometheus.io/scrape` annotation scrapers |
+
+With **kube-prometheus-stack** its Prometheus only picks up `ServiceMonitor` /
+`PodMonitor` objects that carry its release label, so set
+`<svc>.metrics.serviceMonitor.additionalLabels.release` (and `podMonitor`'s) to
+your kube-prometheus-stack release name — otherwise the targets are created but
+never scraped. The scrape endpoints set `honorLabels: true` so the `service`
+label the app emits (`terrakube-api` / `-executor` / `-registry`) is kept as-is;
+dashboards and alert rules key on it.
 
 Migrating from chart 4.x? The `otel` block changed shape (OTLP-first, jaeger/zipkin
 deprecated) — see [`UPGRADING.md`](UPGRADING.md).

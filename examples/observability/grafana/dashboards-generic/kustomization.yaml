@@ -1,6 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: observability
+# No namespace pinned: these are plain metric dashboards for any Prometheus-compatible
+# backend. Apply them into whatever namespace your Grafana's dashboard sidecar watches,
+# e.g. `kubectl apply -k examples/observability/grafana/dashboards-generic/ -n monitoring`
+# for a default kube-prometheus-stack install.
 configMapGenerator:
   - name: tk-dash-jvm
     files: [jvm.json]

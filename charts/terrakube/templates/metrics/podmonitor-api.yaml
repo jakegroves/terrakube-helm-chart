@@ -16,4 +16,5 @@ spec:
     - port: {{ .Values.api.metrics.port | default "http" }}
       path: {{ .Values.api.metrics.path | default "/actuator/prometheus" }}
       interval: {{ .Values.api.metrics.interval | default "30s" }}
+      honorLabels: true
 {{- end -}}

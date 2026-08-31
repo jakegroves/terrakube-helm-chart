@@ -1,22 +1,24 @@
 # Sizing the observability stack
 
 How many time series will Terrakube produce, how much disk will that take, and
-which knobs trade fidelity for cost. Measure your own numbers with
-[`telemetry-compose/loadgen/`](../../../terrakube/telemetry-compose/loadgen) — the
-last section shows how.
+which knobs trade fidelity for cost. Measure your own numbers with the load
+generator in the app repo —
+[`terrakube-io/terrakube` → `telemetry-compose/loadgen/`](https://github.com/terrakube-io/terrakube/tree/main/telemetry-compose/loadgen)
+— the last section shows how.
 
-`N` = organizations (the `organization` metric label is capped at
-`io.terrakube.metrics.max-organization-tags`, default **200**, so `min(N,200)`
-below). `R` = distinct span names ≈ HTTP routes + parameterised SQL shapes.
-`W` = workspaces.
+`N` = organizations (the `organization` metric label is bounded at
+`io.terrakube.metrics.max-organization-tags`, default **200**, over a rolling
+2-hour window, so `min(N,200)` below). `R` = distinct span names ≈ HTTP routes +
+parameterised SQL shapes. `W` = workspaces. All app meters also carry a fixed
+`service` tag (3 values) that does not multiply per-org cardinality.
 
 ## 1. Cardinality
 
 | Meter family | Active series ≈ |
 |---|---|
-| `terrakube_run_finished_total` | `outcome(7) · via(7) · plan_only(2) · min(N,200)` = `98·min(N,200)` |
-| `terrakube_run_started_total` | `via(7) · plan_only(2) · min(N,200)` = `14·min(N,200)` |
-| `terrakube_run_duration_seconds` | `3 (count/sum/max) · outcome(7) · plan_only(2) · min(N,200)` = `42·min(N,200)` — **`·(buckets+2)` instead of `·3` if you enable `percentiles-histogram`** (see §3) |
+| `terrakube_run_finished_total` | `outcome(7) · via(7) · min(N,200)` = `49·min(N,200)` |
+| `terrakube_run_started_total` | `via(7) · min(N,200)` = `7·min(N,200)` |
+| `terrakube_run_duration_seconds` | `3 (count/sum/max) · outcome(7) · min(N,200)` = `21·min(N,200)` — **`·(buckets+2)` instead of `·3` if you enable `percentiles-histogram`** (see §3) |
 | `terrakube_run_approval_wait_seconds` | `3 · min(N,200)` |
 | `terrakube_resource_changes_total` | `phase(2) · action(6) · min(N,200)` = `12·min(N,200)` |
 | `terrakube_plan_result_total` | `result(3) · min(N,200)` |
@@ -87,7 +89,8 @@ Traces — ≈ 40 spans/run · ~400 B/span:
 
 ## 4. Measure your own numbers
 
-Bring up the from-source loop (`./.devcontainer/dev-fromsource.sh up`), then:
+In a checkout of [`terrakube-io/terrakube`](https://github.com/terrakube-io/terrakube),
+bring up the from-source loop (`./.devcontainer/dev-fromsource.sh up`), then:
 
 ```bash
 cd telemetry-compose/loadgen

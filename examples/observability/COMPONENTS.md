@@ -10,7 +10,7 @@ matching `applications/*.yaml` and re-run `test/validate.sh` when upgrading.
 | Traces | `grafana/tempo-distributed` | `1.61.3` | https://github.com/grafana/helm-charts | S3-backed trace store; metrics-generator (span-metrics + service-graphs) enabled, remote-writes to the VMCluster |
 | Logs | `vm/victoria-logs-single` | `0.13.9` | https://github.com/VictoriaMetrics/helm-charts | OTLP log store, 30d |
 | Grafana `victoriametrics-logs-datasource` plugin | — | — | https://github.com/VictoriaMetrics/victorialogs-datasource | queried by `terrakube-logs.json` and the log `derivedFields` |
-| Dashboards / alerts | (this repo) | — | `grafana/`, `rules/` | 7 metric dashboards (`dashboards-generic/`) + Traces / Logs / UI RUM / Platform Health (`dashboards/`), SLO + symptom + usage VMRules |
+| Dashboards / alerts | (this repo) | — | `grafana/`, `rules/` | 7 metric dashboards (`dashboards-generic/`) + Cost & Scale / Traces / Logs / UI RUM / Platform Health (`dashboards/`) = 12, plus SLO + symptom + usage VMRules |
 
 ## Approximate footprint (prod overlay)
 

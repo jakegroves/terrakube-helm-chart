@@ -1,6 +1,13 @@
 # Provision the three datasources into an existing Grafana via its sidecar
 # (label grafana_datasource: "1"). If you enabled the bundled Grafana in
 # victoria-metrics-k8s-stack.values.yaml instead, it picks this up automatically.
+#
+# The URLs below assume the reference stack's release names (see values/*.values.yaml)
+# in the `observability` namespace - adjust host/namespace if you renamed a release.
+# No `isDefault` is set: a kube-prometheus-stack Grafana already has a default
+# Prometheus, and two defaults make the dashboards' ${DS_PROMETHEUS} binding
+# nondeterministic. Pick "VictoriaMetrics" from the datasource dropdown, or set it
+# default yourself if this is a standalone Grafana.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -17,7 +24,6 @@ data:
         type: prometheus
         access: proxy
         url: http://vmselect-vmcluster-victoria-metrics-k8s-stack.observability.svc:8481/select/0/prometheus
-        isDefault: true
         jsonData:
           exemplarTraceIdDestinations:
             - name: trace_id

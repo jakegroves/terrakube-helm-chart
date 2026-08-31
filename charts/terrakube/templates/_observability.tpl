@@ -18,18 +18,24 @@ OTEL_EXPORTER_OTLP_PROTOCOL: {{ $otel.otlp.protocol | default "http/protobuf" | 
 OTEL_TRACES_EXPORTER: "otlp"
 OTEL_METRICS_EXPORTER: "none"
 OTEL_LOGS_EXPORTER: {{ ternary "otlp" "none" $otel.logs.enabled | quote }}
-OTEL_INSTRUMENTATION_LOGBACK-APPENDER_ENABLED: {{ $otel.logs.enabled | quote }}
-OTEL_INSTRUMENTATION_LOGBACK-MDC_ENABLED: "true"
+{{- /* env var names must be C identifiers - the agent maps '.'/'-' in the property name to '_',
+       and kubelet silently drops a hyphenated key projected through envFrom */}}
+OTEL_INSTRUMENTATION_LOGBACK_APPENDER_ENABLED: {{ $otel.logs.enabled | quote }}
+OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED: "true"
 OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
 OTEL_TRACES_SAMPLER_ARG: {{ $otel.traces.samplerArg | default "0.1" | quote }}
 {{- else if eq $proto "jaeger" }}
 OTEL_TRACES_EXPORTER: "jaeger"
 OTEL_EXPORTER_JAEGER_ENDPOINT: {{ required (printf "%s.otel.traces.endpoint is required when protocol is jaeger" $svc) $otel.traces.endpoint | quote }}
 OTEL_METRICS_EXPORTER: "none"
+{{- /* no OTLP endpoint on this path - stop the agent defaulting OTEL_LOGS_EXPORTER to otlp and
+       spamming connection errors at localhost:4318 */}}
+OTEL_LOGS_EXPORTER: "none"
 {{- else if eq $proto "zipkin" }}
 OTEL_TRACES_EXPORTER: "zipkin"
 OTEL_EXPORTER_ZIPKIN_ENDPOINT: {{ required (printf "%s.otel.traces.endpoint is required when protocol is zipkin" $svc) $otel.traces.endpoint | quote }}
 OTEL_METRICS_EXPORTER: "none"
+OTEL_LOGS_EXPORTER: "none"
 {{- end }}
 {{- end -}}
 

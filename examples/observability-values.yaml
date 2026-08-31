@@ -3,7 +3,15 @@
 # VictoriaLogs, Grafana) is installed separately - see examples/observability/.
 #
 # Swap `vmPodScrape` for `serviceMonitor` / `podMonitor` / `annotations` to match
-# whatever your cluster already runs.
+# whatever your cluster already runs. For kube-prometheus-stack, use
+# `serviceMonitor` AND label it with the kube-prometheus-stack release name, or its
+# Prometheus won't select the monitor:
+#
+#   metrics:
+#     serviceMonitor:
+#       enabled: true
+#       additionalLabels:
+#         release: kube-prometheus-stack
 
 global:
   observability:

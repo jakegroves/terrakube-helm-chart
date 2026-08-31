@@ -69,13 +69,33 @@ The reference stack does **not** bundle Grafana (`grafana.enabled: false` in
 via its sidecar:
 
 1. **Sidecar (recommended)** — a Grafana running the standard dashboard/datasource
-   sidecar (both `victoria-metrics-k8s-stack` and `kube-prometheus-stack` ship one):
+   sidecar (both `victoria-metrics-k8s-stack` and `kube-prometheus-stack` ship one).
+
+   Full bundle (this stack's own Grafana, in `observability`):
    ```bash
    kubectl apply -k examples/observability/grafana/
    ```
    Datasources land from the `grafana_datasource: "1"` ConfigMap; the 12
-   dashboards from `grafana_dashboard: "1"` ConfigMaps, foldered "Terrakube
-   Platform" (cross-signal) and "Terrakube Infrastructure" (metrics).
+   dashboards from `grafana_dashboard: "1"` ConfigMaps.
+
+   **Already running `kube-prometheus-stack`?** You only want the 7 metric
+   dashboards against your existing Prometheus — not the VictoriaMetrics / Tempo /
+   VictoriaLogs datasources:
+   ```bash
+   kubectl apply -k examples/observability/grafana/dashboards-generic/ -n monitoring
+   ```
+   (use the namespace your Grafana runs in). Then check its sidecar:
+   - `sidecar.dashboards.searchNamespace` must include that namespace (it defaults
+     to the release namespace only; set it to `ALL` or add the namespace);
+   - the sidecar label defaults to `grafana_dashboard` — matches; no `labelValue`
+     is set, so `"1"` is fine;
+   - the "Terrakube Infrastructure" / "Terrakube Platform" folders only appear if
+     `sidecar.dashboards.folderAnnotation: grafana_folder` **and**
+     `sidecar.dashboards.provider.foldersFromFilesStructure: true` are set;
+     otherwise every dashboard lands in the default folder (harmless);
+   - the dashboards bind `${DS_PROMETHEUS}` to the default Prometheus datasource -
+     kube-prometheus-stack sets one, so they work out of the box; otherwise pick
+     the datasource from the "Metrics source" dropdown.
 2. **grafana-operator** — point a `GrafanaDashboard` `spec.configMapRef` at each
    generated `tk-dash-*` ConfigMap.
 3. **Terraform** — `for_each` the `grafana_dashboard` provider over

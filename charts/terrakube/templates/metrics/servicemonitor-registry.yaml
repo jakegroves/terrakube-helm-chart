@@ -16,6 +16,8 @@ spec:
     - port: {{ .Values.registry.metrics.port | default "http" }}
       path: {{ .Values.registry.metrics.path | default "/actuator/prometheus" }}
       interval: {{ .Values.registry.metrics.interval | default "30s" }}
+      # the app emits its own `service` tag; let it win over the Operator's target label
+      honorLabels: true
       {{- with .Values.registry.metrics.serviceMonitor.relabelings }}
       relabelings:
         {{- toYaml . | nindent 8 }}
