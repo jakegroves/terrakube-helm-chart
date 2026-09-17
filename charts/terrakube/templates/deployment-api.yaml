@@ -51,6 +51,14 @@ spec:
         - name: http
           containerPort: 8080
         env:
+        - name: TerrakubePrometheusEnabled
+          value: {{ .Values.api.metrics.enabled | quote }}
+        - name: TerrakubeObservabilityMetricsEnabled
+          value: {{ .Values.api.metrics.enabled | quote }}
+        {{- if .Values.api.otel.enabled }}
+        - name: TerrakubeStructuredLoggingFormat
+          value: {{ ternary "ecs" "" .Values.api.otel.logs.enabled | quote }}
+        {{- end }}
         {{- if .Values.api.ephemeralExecution.enabled }}
         - name: ExecutorEphemeralNamespace
           value: {{ .Release.Namespace }}

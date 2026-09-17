@@ -51,6 +51,14 @@ spec:
         - name: http
           containerPort: 8075
         env:
+        - name: TerrakubePrometheusEnabled
+          value: {{ .Values.registry.metrics.enabled | quote }}
+        - name: TerrakubeObservabilityMetricsEnabled
+          value: {{ .Values.registry.metrics.enabled | quote }}
+        {{- if .Values.registry.otel.enabled }}
+        - name: TerrakubeStructuredLoggingFormat
+          value: {{ ternary "ecs" "" .Values.registry.otel.logs.enabled | quote }}
+        {{- end }}
         {{- if .Values.security.caCerts }}
         - name: SERVICE_BINDING_ROOT
           value: /mnt/platform/bindings
