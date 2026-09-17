@@ -223,7 +223,7 @@ api:
       samplerArg: "0.1"
       endpoint: ""                   # only used when protocol is jaeger or zipkin
     logs:
-      enabled: true                  # ship logs via the agent's OTLP log appender
+      enabled: false                 # default: ECS stdout collected by the cluster, not agent OTLP
   metrics:
     enabled: false
     path: /actuator/prometheus
@@ -330,7 +330,7 @@ executor:
       samplerArg: "0.1"
       endpoint: ""                   # only used when protocol is jaeger or zipkin
     logs:
-      enabled: true
+      enabled: false
   metrics:
     enabled: false
     path: /actuator/prometheus
@@ -399,7 +399,7 @@ registry:
       samplerArg: "0.1"
       endpoint: ""                   # only used when protocol is jaeger or zipkin
     logs:
-      enabled: true
+      enabled: false
   metrics:
     enabled: false
     path: /actuator/prometheus

@@ -57,7 +57,7 @@ spec:
           value: {{ .Values.api.metrics.enabled | quote }}
         {{- if .Values.api.otel.enabled }}
         - name: TerrakubeStructuredLoggingFormat
-          value: {{ ternary "ecs" "" .Values.api.otel.logs.enabled | quote }}
+          value: "ecs"
         {{- end }}
         {{- if .Values.api.ephemeralExecution.enabled }}
         - name: ExecutorEphemeralNamespace

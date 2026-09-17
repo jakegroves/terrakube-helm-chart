@@ -57,7 +57,7 @@ spec:
           value: {{ .Values.registry.metrics.enabled | quote }}
         {{- if .Values.registry.otel.enabled }}
         - name: TerrakubeStructuredLoggingFormat
-          value: {{ ternary "ecs" "" .Values.registry.otel.logs.enabled | quote }}
+          value: "ecs"
         {{- end }}
         {{- if .Values.security.caCerts }}
         - name: SERVICE_BINDING_ROOT
